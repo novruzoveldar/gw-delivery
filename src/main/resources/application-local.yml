@@ -1,0 +1,55 @@
+keycloak:
+  realm: delivery
+  auth-server-url: http://localhost:8080
+  scope: openid
+  grant-type: client_credentials
+  public-key: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhr86CCJdvJTlgpun6mImQ7HweSoCeGPlyxH71GczQRu/11au+31X4K00MgTbvmNNnHxIIcmIER28SbbC+cFExTTMOp8hkpKfnJpDfkanIX3p0q3jS7u+275GbPRoim/K5rANmDbReo6JwLFcTWvlnZ3gpkW2Qp7a32I9ErhWJIdgkww++cHC7Eucr9H9PWSaL51I7tlEPyq01eypBn0mtHTToBALoItAlnf6A+pMuGfAyYfJh0NM0vm0mAwELit26QrfBAqgvhZz5Bf8djNchYzvxNweRyVcSaQGuTDKo6t01/9dLY9nTrU981eqt+wbY509xbrzw22AsncAiazqnwIDAQAB
+  clientUser:
+    id: parcel-delivery-user
+  clientAdmin:
+    id: parcel-delivery-admin
+  clientCourier:
+    id: parcel-delivery-courier
+
+
+redis:
+  url: redis://localhost:6379
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: baseAuth
+          uri: http://localhost:8080/
+          predicates:
+            - Path=/base/auth/**
+        - id: clientAuth
+          uri: http://localhost:8086/
+          predicates:
+            - Path=/auth/**
+          filters:
+            - ClientAuthModuleFilter
+        - id: clientRegister
+          uri: http://localhost:8086/
+          predicates:
+            - Path=/registration/**
+          filters:
+            - ClientRegistrationModuleFilter
+        - id: userModule
+          uri: http://localhost:8091/
+          predicates:
+            - Path=/api/user/courier/order/**
+          filters:
+            - UserModuleFilter
+        - id: adminModule
+          uri: http://localhost:8092/
+          predicates:
+            - Path=/api/admin/courier/order/**,/api/admin/parcel/**
+          filters:
+            - AdminModuleFilter
+        - id: courierModule
+          uri: http://localhost:8082/
+          predicates:
+            - Path=/api/courier/courier/order/**
+          filters:
+            - CourierModuleFilter
